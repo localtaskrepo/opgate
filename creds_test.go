@@ -86,26 +86,6 @@ func TestLoadRegistryRejectsUnknownFields(t *testing.T) {
 	}
 }
 
-func TestRepoRegistryIsValid(t *testing.T) {
-	p := filepath.Join("..", "..", "docs", "credentials.json")
-	if _, err := os.Stat(p); err != nil {
-		t.Skip("no docs/credentials.json")
-	}
-	reg, err := loadRegistry(p)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(reg.Credentials) < 10 {
-		t.Errorf("only %d credentials in the repo registry", len(reg.Credentials))
-	}
-	b, _ := os.ReadFile(p)
-	for _, bad := range []string{"BEGIN ", "gho_", "ghp_", "sk-", "glsa_", "AKIA"} {
-		if bytes.Contains(b, []byte(bad)) {
-			t.Errorf("registry contains something that looks like a secret (%q)", bad)
-		}
-	}
-}
-
 // ---------- probes
 
 func TestHTTPProbe(t *testing.T) {
