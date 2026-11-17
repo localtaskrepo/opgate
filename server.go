@@ -177,10 +177,10 @@ func (b *Broker) handler() http.Handler {
 		r := b.get(req.PathValue("id"))
 		// the push's Approve button may start the passkey prompt on a desktop too (once)
 		auto := r != nil && go_ == "approve" && r.takeGoToken(req.URL.Query().Get("t"))
-		b.renderPage(w, page, r, KindSecrets, go_, auto)
+		b.renderPage(w, page, r, KindSecrets, go_, auto, b.requestState(req.PathValue("id"))["status"])
 	})
 	mux.HandleFunc("GET /enroll/{id}", func(w http.ResponseWriter, req *http.Request) {
-		b.renderPage(w, page, b.getEnroll(req.PathValue("id"), req.URL.Query().Get("k")), KindEnroll, "", false)
+		b.renderPage(w, page, b.getEnroll(req.PathValue("id"), req.URL.Query().Get("k")), KindEnroll, "", false, "")
 	})
 	mux.HandleFunc("POST /r/{id}/options", func(w http.ResponseWriter, req *http.Request) {
 		r := b.get(req.PathValue("id"))
@@ -389,6 +389,7 @@ type durOpt struct {
 
 type pageData struct {
 	Found, Enroll, Grantable   bool
+	Ended                      string // not open any more: how it ended, when opgate still knows (approved, denied, ...)
 	Auto                       bool   // Go=approve came with the push's token
 	EnrollKey                  string // enroll: the key from the link (posted back with options and finish)
 	R                          *Request
@@ -403,8 +404,11 @@ type pageData struct {
 	Chain                      []string
 }
 
-func (b *Broker) renderPage(w http.ResponseWriter, t *template.Template, r *Request, kind, go_ string, auto bool) {
+func (b *Broker) renderPage(w http.ResponseWriter, t *template.Template, r *Request, kind, go_ string, auto bool, state string) {
 	d := pageData{Enroll: kind == KindEnroll, Go: go_, Auto: auto, Kind: "secrets"}
+	if state != "pending" && state != "gone" {
+		d.Ended = state
+	}
 	if d.Enroll {
 		d.Kind = KindEnroll
 	}

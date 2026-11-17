@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-const version = "0.24.0"
+const version = "0.24.1"
 
 const usage = `opgate: phone-approved 1Password access for agents
 

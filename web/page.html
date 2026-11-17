@@ -28,7 +28,11 @@
   <div class="empty">
     <div class="tile">{{template "i-lock"}}</div>
     <h2 style="margin:8px 0 0;color:var(--fg);font-size:21px">Nothing to decide</h2>
-    <p style="margin:0">This request was already decided or has expired.</p>
+    {{if eq .Ended "approved"}}<p style="margin:0">This request was approved.</p>
+    {{else if eq .Ended "denied"}}<p style="margin:0">This request was denied.</p>
+    {{else if eq .Ended "expired"}}<p style="margin:0">This request expired: nobody decided in time.</p>
+    {{else if .Ended}}<p style="margin:0">This request ended: the agent stopped waiting, or it failed.</p>
+    {{else}}<p style="margin:0">This request was already decided or has expired.</p>{{end}}
     <a class="btn home" href="/">Overview</a>
   </div>
 {{else if .Enroll}}

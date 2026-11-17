@@ -208,3 +208,36 @@ func TestProbesDontFollowRedirects(t *testing.T) {
 		t.Error("the probe followed the redirect with its API key")
 	}
 }
+
+// A request page opened again after its decision (a reloaded tab, the app reopened) says how it ended, not
+// "already decided or has expired" after an approval that worked.
+func TestDecidedRequestPageShowsOutcome(t *testing.T) {
+	e := overviewEnv(t)
+	a := newAuthenticator("approve.example")
+	e.enroll(a)
+	r := e.ask(cfReq)
+	if code, body := e.approve(a, r, "0s", 0x05); code != 200 {
+		t.Fatalf("approve: %d %s", code, body)
+	}
+	e.b.Wait(context.Background(), r)
+	_, page := e.getPage("/r/" + r.ID)
+	if strings.Contains(page, "already decided or has expired") || !strings.Contains(page, "This request was approved") {
+		t.Errorf("approved request's page:\n%s", page)
+	}
+	r2 := e.ask(cfReq)
+	e.b.decide(r2, Result{Status: "expired", Error: "no decision in time"})
+	if _, page := e.getPage("/r/" + r2.ID); !strings.Contains(page, "nobody decided in time") {
+		t.Errorf("expired request's page:\n%s", page)
+	}
+	if _, page := e.getPage("/r/unknown"); !strings.Contains(page, "already decided or has expired") {
+		t.Errorf("unknown request's page:\n%s", page)
+	}
+}
+
+// The countdown stops once the page shows a decision: at zero it must not turn "Approved" into "Expired".
+func TestCountdownStopsAfterDecision(t *testing.T) {
+	js, _ := web.ReadFile("web/app.js")
+	if !strings.Contains(string(js), "if (s === 0 && !expired && $('req') && !document.body.classList.contains('decided'))") {
+		t.Error("the countdown in app.js still expires a decided request")
+	}
+}

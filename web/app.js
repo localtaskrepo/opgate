@@ -141,7 +141,7 @@ if (timer) {
     const s = Math.max(0, Math.round((until - Date.now()) / 1000));
     $('left').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     timer.classList.toggle('low', s < 60);
-    if (s === 0 && !expired && $('req')) { expired = true; result('no', 'Expired', 'Nobody decided in time.'); }
+    if (s === 0 && !expired && $('req') && !document.body.classList.contains('decided')) { expired = true; result('no', 'Expired', 'Nobody decided in time.'); }
   };
   tick();
   setInterval(tick, 1000);
