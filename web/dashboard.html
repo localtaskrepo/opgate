@@ -1,0 +1,174 @@
+{{define "cred"}}<li{{if .Anchor}} id="{{.Anchor}}"{{end}} data-text="{{.Text}}">
+    <div class="row1"><span class="t">Tier {{.Tier}}{{if .In}} · expires {{.In}}{{end}}{{if ne .LastDay "-"}} · used {{.LastDay}}{{end}}</span><span class="pill s-{{.Status}}">{{.Status}}</span></div>
+    <div class="what">{{.Title}}</div>
+    {{if .Unlocked}}<dl class="cd">
+      <dt>Stored</dt><dd><code>{{.Store}}</code></dd>
+      {{if .UsedBy}}<dt>Used by</dt><dd>{{range $i, $u := .UsedBy}}{{if $i}}, {{end}}{{$u}}{{end}}</dd>{{end}}
+      {{if .Scope}}<dt>Scope</dt><dd>{{.Scope}}</dd>{{end}}
+      {{if .Detail}}<dt>Check</dt><dd>{{.Detail}}</dd>{{end}}
+      {{if ne .ExpiresDay "-"}}<dt>Expires</dt><dd>{{.ExpiresDay}}{{if .ExpiresSrc}} ({{.ExpiresSrc}}){{end}}</dd>{{end}}
+      {{if .LastSrc}}<dt>Last use from</dt><dd>{{.LastSrc}}{{if .Uses30d}} · {{.Uses30d}} opgate uses in 30 days{{end}}</dd>{{end}}
+      {{if .Created}}<dt>Created</dt><dd>{{.Created}}</dd>{{end}}
+      {{if .Rotate}}<dt>Rotate</dt><dd>{{.Rotate}}</dd>{{end}}
+      {{if .Revoke}}<dt>Revoke</dt><dd>{{.Revoke}}</dd>{{end}}
+      {{if .Lifecycle}}<dt>Calendar</dt><dd><code>{{.Lifecycle}}</code></dd>{{end}}
+      <dt>ID</dt><dd><code>{{.ID}}</code></dd>
+    </dl>{{end}}
+  </li>{{end}}
+{{define "events"}}{{range .Items}}<li class="ev" data-id="{{.ID}}">
+    <div class="row1"><span class="t">{{.Time.Local.Format "Mon 2 Jan 15:04"}} · {{typeLabel .}}</span><span class="pill p-{{.Status}}">{{statusLabel .}}</span></div>
+    <div class="what">{{.Title}}{{if .TTL}} · {{.TTL}}{{end}}</div>
+    {{if .Reason}}<div class="why">{{.Reason}}</div>{{end}}
+    {{if .Under}}<div class="under">allowed by the <b>{{.Under}}</b></div>{{end}}
+    {{if or .Agent .Command .Project}}<div class="cmdline">{{if .Project}}<span class="proj">{{if .Icon}}<img class="picon" src="{{.Icon}}" alt="">{{end}}{{.Project}}</span>{{end}}{{if .Agent}}<span>{{.Agent}}</span>{{end}}{{if .Command}}<code>{{firstLine .Command}}</code>{{end}}</div>{{end}}
+    <div class="full">
+      {{if .Command}}<div><div class="k">Command</div><pre class="code" data-lazy-cmd>{{.Command}}</pre></div>{{end}}
+      {{if .Runs}}<div><div class="k">Gets the secrets</div><pre class="code" data-lazy-cmd>{{.Runs}}</pre></div>{{end}}
+      {{if .Folder}}<div><div class="k">Folder</div><div class="v mono">{{.Folder}}</div></div>{{end}}
+      {{if .By}}<div><div class="k">Decided by</div><div class="v">{{.By}}</div></div>{{end}}
+    </div>
+  </li>{{end}}{{end}}
+{{define "chev"}}<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>{{end}}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0c0e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f2" media="(prefers-color-scheme: light)">
+<title>Overview · opgate</title>
+<link rel="stylesheet" href="/app.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+</head>
+<body class="k-secrets history overview" data-sig="{{.Sig}}">
+<button class="stale" id="stale" hidden>New activity · Refresh</button>
+<div class="page"><div class="card"><div class="main">
+  <div class="top"><div class="brand"><span class="mark"><img src="/favicon.svg" alt=""></span>opgate</div>
+    <span class="navs"><a class="timer navlink" href="/settings">Notifications</a></span></div>
+
+  <div class="headline h-{{.HeadlineLevel}}">
+    <span class="dot"></span>
+    <div><h1>{{.Headline}}</h1>
+    <p>Mode <b>{{.Mode}}</b>{{if .ModeText}}: {{.ModeText}}{{end}}</p></div>
+  </div>
+
+  {{if .Attention}}<h2 class="sec">Needs attention</h2>
+  <ol class="attn">{{range .Attention}}<li class="{{.Level}}">
+    {{if .Link}}<a href="{{.Link}}">{{end}}
+      <div class="ttl">{{.Title}}</div>
+      {{if .Text}}<div class="txt">{{.Text}}</div>{{end}}
+      {{if .When}}<div class="when">{{.When}}</div>{{end}}
+    {{if .Link}}</a>{{end}}
+    {{if .Raw}}<details class="raw"><summary>Message from 1Password</summary><code>{{.Raw}}</code></details>{{end}}
+    {{if or .Restore .Dismiss}}<div class="acts">
+      {{if .Restore}}<button type="button" class="minibtn ok restore" data-ref="{{.Restore}}">Load it again</button>{{end}}
+      {{if .Dismiss}}<button type="button" class="minibtn dismiss" data-key="{{.Dismiss}}">Dismiss</button>{{end}}
+    </div>{{end}}
+  </li>{{end}}</ol>{{end}}
+  <div id="msg"></div>
+
+  <h2 class="sec">Allowed right now</h2>
+  {{if .Active}}<ol class="hist active">{{range .Active}}<li>
+    <a href="{{.Link}}">
+      <div class="row1"><span class="t">{{.Kind}}</span><span class="pill">{{.Uses}}</span></div>
+      <div class="what">{{.Title}}</div>
+      <div class="why left"{{if .Until}} data-until="{{.Until}}"{{end}}>{{.Left}}</div>
+    </a>
+    <div class="acts">
+      <button type="button" class="minibtn revoke" data-tag="{{.Tag}}" data-title="{{.Title}}"{{if .Daily}} data-daily="1"{{end}}>Revoke</button>
+      {{if .Stop}}<button type="button" class="minibtn revoke" data-tag="{{.Tag}}" data-title="{{.Title}}" data-stop="1">Revoke + end its ssh sessions</button>{{end}}
+      <a class="more" href="{{.Link}}">Uses →</a>
+    </div>
+  </li>{{end}}</ol>
+  {{else}}<p class="note">Nothing: no same-again grants and no loaded keys.</p>{{end}}
+
+  <nav class="tabs" id="tabs" role="tablist">
+    <a role="tab" href="#history" data-tab="history" class="on" aria-selected="true">History</a>
+    <a role="tab" href="#creds" data-tab="creds" aria-selected="false">Credentials{{if .Problems}} <span class="tbadge">{{len .Problems}}</span>{{end}}</a>
+    <a role="tab" href="#stats" data-tab="stats" aria-selected="false">30 days</a>
+  </nav>
+
+  <section class="panel" data-tab="history" role="tabpanel">
+    <div class="hsearch">
+      <input type="search" id="q" placeholder="Search: command, reason, agent, folder…" autocomplete="off" aria-label="Search the history">
+      <button type="button" id="filt" class="iconbtn" aria-expanded="false" aria-controls="hfilters" title="Filters"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>
+    </div>
+    <div class="hfilters" id="hfilters" hidden>
+      <select id="ftype" aria-label="Type">
+        <option value="">All types</option>
+        <option value="request">Requests</option>
+        <option value="reuse">Reuses</option>
+        <option value="key">Key uses</option>
+        <option value="1password">1Password (Touch ID)</option>
+        <option value="op">op commands</option>
+        <option value="view">Unlocks (passkey)</option>
+        <option value="settings">Notification settings</option>
+      </select>
+      <select id="fstatus" aria-label="Outcome">
+        <option value="">Any outcome</option>
+        <option value="approved">Approved</option>
+        <option value="denied">Denied</option>
+        <option value="expired">Expired</option>
+        <option value="cancelled">Cancelled</option>
+        <option value="noprompt">No prompt (reused, key use)</option>
+        <option value="touchid">Touch ID</option>
+        <option value="failed">Failed / error</option>
+      </select>
+      <select id="fdir" aria-label="Order"><option value="">Newest first</option><option value="asc">Oldest first</option></select>
+      <label class="chk"><input type="checkbox" id="routine"> Routine key uses</label>
+    </div>
+    <ol class="hist" id="events">{{template "events" .Hist}}</ol>
+    <div class="pager" id="pager">
+      <button type="button" class="minibtn" id="prev" aria-label="Previous page"{{if le .Hist.Page 1}} disabled{{end}}>‹</button>
+      <span id="count">{{.Hist.Label}}</span>
+      <button type="button" class="minibtn" id="next" aria-label="Next page"{{if ge .Hist.Page .Hist.Pages}} disabled{{end}}>›</button>
+    </div>
+  </section>
+
+  <section class="panel" data-tab="creds" role="tabpanel" hidden>
+  {{if .HasCreds}}
+  <div class="counts">{{range .CredCounts}}<span class="c c-{{.Key}}"><b>{{.N}}</b> {{.Name}}</span>{{end}}<span class="c">checked {{.CredsChecked}}</span></div>
+  <div class="lockbar" id="lockbar">
+    {{if .Unlocked}}<span>Details unlocked until {{.UnlockedUntil}}</span><button type="button" class="minibtn" id="lock">Lock</button>
+    {{else}}<span>Where each one is stored, who uses it and how to rotate it</span><button type="button" class="minibtn ok" id="unlock">Unlock with passkey</button>{{end}}
+  </div>
+  {{if .Problems}}<ol class="hist creds">{{range .Problems}}{{template "cred" .}}{{end}}</ol>
+  {{else}}<p class="note" style="font-size:14px">No credential is expired, invalid or expiring within its warning time.</p>{{end}}
+  {{if .Upcoming}}<h3 class="sub3">Expiring in the next 90 days</h3>
+  <ol class="toplist">{{range .Upcoming}}<li><span>{{.Title}}</span><b class="soft">{{.In}}</b></li>{{end}}</ol>{{end}}
+  <details class="allcreds"{{if .Unlocked}} open{{end}}><summary>All {{len .Creds}} credentials {{template "chev"}}</summary>
+    <input type="search" id="cq" placeholder="Filter: name, tier, status{{if .Unlocked}}, where, who{{end}}…" autocomplete="off" aria-label="Filter credentials">
+    <ol class="hist creds" id="allcreds">{{range .Creds}}{{template "cred" .}}{{end}}</ol>
+    <p class="note" id="cnone" hidden>No credential matches.</p>
+  </details>
+  {{if .Unused}}<details class="allcreds"><summary>{{len .Unused}} 1Password items with no known use in 30 days {{template "chev"}}</summary>
+    <p class="note" style="font-size:14px">Candidates for removal from the Agents vault, unless something outside opgate uses them.</p>
+    <ol class="toplist">{{range .Unused}}<li><span>{{.Title}}</span><b class="soft">{{if eq .LastDay "-"}}never seen{{else}}last {{.LastDay}}{{end}}</b></li>{{end}}</ol>
+  </details>{{end}}
+  {{else}}<p class="note">No result yet: the daily check (<code>opgate creds</code>) hasn't run.</p>{{end}}
+
+  </section>
+
+  <section class="panel" data-tab="stats" role="tabpanel" hidden>
+  <div class="tiles">
+    <div><div class="n">{{.Stats.Requests}}</div><div class="l">requests</div>{{if .Stats.Outcomes}}<div class="s">{{.Stats.Outcomes}}</div>{{end}}</div>
+    <div><div class="n">{{if .Stats.MedianApprove}}{{.Stats.MedianApprove}}{{else}}–{{end}}</div><div class="l">typical time to approve</div><div class="s">median</div></div>
+    <div><div class="n">{{.Stats.KeyUses}}</div><div class="l">key uses without a prompt</div>{{if .Stats.Reused}}<div class="s">+ {{.Stats.Reused}} same-again reuses</div>{{end}}</div>
+    <div><div class="n">{{.Stats.TouchID}}</div><div class="l">via 1Password on the Mac</div><div class="s">Touch ID</div></div>
+  </div>
+  {{if .Stats.Agents}}<h3 class="sub3">By agent</h3>
+  <ol class="toplist">{{range .Stats.Agents}}<li><span>{{.Name}}</span><b class="soft">{{.Requests}} requests · {{.KeyUses}} key uses</b></li>{{end}}</ol>{{end}}
+  {{if .Stats.Top}}<h3 class="sub3">Most used</h3>
+  <ol class="toplist">{{range .Stats.Top}}<li><span>{{.Name}}<span class="sub">{{.Sub}}</span></span><b>{{.N}}</b></li>{{end}}</ol>{{end}}
+
+  </section>
+
+  <p class="note foot">opgate v{{.Version}} · from its memory, the audit log and the last credential check on the Mac; no secret value is ever shown. This page updates by itself.</p>
+</div></div></div>
+<script src="/app.js"></script>
+</body>
+</html>

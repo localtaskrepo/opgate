@@ -1,0 +1,19 @@
+#!/bin/sh
+# git's gpg.ssh.program: ssh-keygen signing through opgate's agent (the agent key it autoloads), so commits are
+# signed without 1Password's desktop prompt. Installed to ~/.local/bin/opgate-ssh-sign by install.sh.
+# When signing fails because the agent holds no keys, it says why instead of ssh-keygen's "Couldn't find key in
+# agent?" alone (an opgate started while the Mac slept or was locked loads the key once it can read the keychain).
+export SSH_AUTH_SOCK="$HOME/.ssh/opgate-agent.sock"
+[ "$1" = "-Y" ] && [ "$2" = "sign" ] || exec /usr/bin/ssh-keygen "$@"
+/usr/bin/ssh-keygen "$@" && exit 0
+rc=$?
+if ! /usr/bin/ssh-add -l >/dev/null 2>&1; then
+  echo "opgate-ssh-sign: opgate's agent ($SSH_AUTH_SOCK) holds no keys, so nothing can sign." >&2
+  why=$("$HOME/.local/bin/opgate" status 2>/dev/null | sed -n 's/^ *"keychain": "\(.*\)",*$/\1/p')
+  if [ -n "$why" ]; then
+    echo "opgate-ssh-sign: $why" >&2
+  else
+    echo "opgate-ssh-sign: is opgate running? \`opgate status\`, its log ~/Library/Logs/opgate/opgate.log" >&2
+  fi
+fi
+exit $rc

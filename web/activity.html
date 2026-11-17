@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0c0e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f2" media="(prefers-color-scheme: light)">
+<title>{{if .Found}}{{.A.Title}} · activity{{else}}opgate{{end}}</title>
+<link rel="stylesheet" href="/app.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+</head>
+<body class="k-{{if eq .A.Kind "grant"}}secrets{{else}}ssh{{end}} activity">
+<button class="stale" id="stale" hidden>New activity · Refresh</button>
+<div class="page"><div class="card">
+{{if not .Found}}
+  <div class="empty">
+    <h2 style="margin:8px 0 0;color:var(--fg);font-size:21px">Nothing here</h2>
+    <p style="margin:0">This activity is gone: opgate was restarted, or it's older than a day.</p>
+    <a class="btn home" href="/">Overview</a>
+  </div>
+{{else}}
+  <section class="request" id="act" data-tag="{{.A.Tag}}" data-go="{{.Go}}" data-title="{{.A.Title}}" data-count="{{.A.Count}}" data-revoked="{{.A.Revoked}}" style="display:block">
+    <div class="main">
+      <div class="top"><a class="brand" href="/"><span class="mark"><img src="/favicon.svg" alt=""></span>opgate <span class="hlink">· overview</span></a>
+        <span class="timer">{{if .A.Revoked}}revoked{{else if .Until}}until {{.Until}}{{else}}today{{end}}</span></div>
+      <div class="hero">
+        <div class="tile">{{if eq .A.Kind "grant"}}<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.6"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>{{else}}<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 20 3"/><path d="m16 7 3 3"/><path d="m18.5 4.5 2 2"/></svg>{{end}}</div>
+        <div><div class="kind">{{.KindLabel}}</div><h1>{{.A.Title}}</h1></div>
+      </div>
+      <p class="note">Used <b>{{.A.Count}}×</b>{{if eq .A.Kind "daily"}} today{{end}}. Newest first{{if gt .A.Count (len .A.Uses)}} (last {{len .A.Uses}}){{end}}.</p>
+      <ol class="uses">
+        {{range .A.Uses}}<li>
+          <div class="when"><span>{{.Time.Local.Format "15:04:05"}}</span>{{if .Project}}<span class="proj">{{if .Icon}}<img class="picon" src="{{.Icon}}" alt="">{{end}}{{.Project}}</span>{{end}}{{if .Agent}}<span>{{.Agent}}</span>{{end}}{{if .Folder}}<span class="mono">{{.Folder}}</span>{{end}}</div>
+          <div class="cmd"><div class="text" data-cmd>{{.Command}}</div></div>
+          {{if .Context}}<p class="ctx">part of: <code>{{.Context}}</code></p>{{end}}
+          <details class="chain-d"><summary>Process chain</summary><ol class="chain">{{range .Chain}}<li><code>{{.}}</code></li>{{end}}</ol></details>
+        </li>{{end}}
+      </ol>
+      <div id="msg"></div>
+    </div>
+  </section>
+  <div class="result" id="result">
+    <svg class="ring" viewBox="0 0 92 92"><circle cx="46" cy="46" r="40"/><circle class="arc" cx="46" cy="46" r="40" transform="rotate(-90 46 46)"/><path id="glyph" d="M33 33l26 26M59 33L33 59"/></svg>
+    <h2 id="rtitle">Revoked</h2><p id="rtext">{{.A.Title}}</p><p class="sub" id="rsub"></p>
+    <a class="btn home" href="/">Overview</a>
+  </div>
+  {{if not .A.Revoked}}<div class="bar" id="bar"><div class="inner">
+    <div class="actions"{{if ne .A.Kind "key"}} style="grid-template-columns:1fr"{{end}}>
+      {{if eq .A.Kind "key"}}<button class="btn deny" id="stop"><span class="spin"></span><span>Revoke + stop</span></button>{{end}}
+      <button class="btn deny revoke" id="revoke"><span class="spin"></span><span>Revoke</span></button>
+    </div>
+    {{if eq .A.Kind "daily"}}<p class="note" style="margin:8px 2px 0;font-size:13px">Whatever uses this key (git signing, ssh) stops until you load it again here (with your passkey).</p>{{end}}
+    <div id="msg2"></div>
+  </div></div>{{else if eq .A.Kind "daily"}}<div class="bar" id="bar"><div class="inner">
+    <div class="actions" style="grid-template-columns:1fr"><button class="btn ok" id="restore"><span class="spin"></span><span>Load the key again</span></button></div>
+    <div id="msg2"></div>
+  </div></div>{{end}}
+{{end}}
+</div></div>
+<script src="/app.js"></script>
+</body>
+</html>

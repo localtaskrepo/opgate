@@ -1,0 +1,2 @@
+# go build ./... writes the binary here
+/opgate

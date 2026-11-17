@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+<radialGradient id="bg" cx="50%" cy="25%" r="90%"><stop offset="0" stop-color="#16382c"/><stop offset="1" stop-color="#06100c"/></radialGradient>
+<linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="420"><stop offset="0" stop-color="#fff2c4"/><stop offset=".22" stop-color="#f2c264"/><stop offset=".48" stop-color="#a86f22"/><stop offset=".66" stop-color="#e9b85c"/><stop offset=".85" stop-color="#b07a2c"/><stop offset="1" stop-color="#6e4513"/></linearGradient>
+<radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fffaf0"/><stop offset=".22" stop-color="#ffd27a" stop-opacity=".85"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="512" height="512" rx="112" fill="url(#bg)"/><g transform="translate(256 262) scale(1.1) translate(-256 -262)"><g fill="none" stroke="url(#g)" stroke-width="34" stroke-linecap="round"><path d="M104 414V290a152 152 0 0 1 304 0v124" stroke-dasharray="360 44 700"/>
+<path d="M152 414V294a104 104 0 0 1 208 0v70" stroke-dasharray="140 36 700"/>
+<path d="M200 384V298a56 56 0 0 1 112 0v86"/></g><circle cx="256" cy="306" r="18" fill="#fffaf0"/><path d="M247 316h18l8 54h-34z" fill="#fffaf0"/></g>
+</svg>

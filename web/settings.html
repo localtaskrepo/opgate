@@ -1,0 +1,62 @@
+{{define "seg"}}<div class="seg" role="radiogroup" style="grid-template-columns:repeat({{len .Opts}},1fr)">{{$n := .Name}}{{range .Opts}}<input type="radio" name="{{$n}}" id="{{$n}}-{{.Value}}" value="{{.Value}}"{{if .Checked}} checked{{end}}><label for="{{$n}}-{{.Value}}">{{.Label}}</label>{{end}}</div>{{end}}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0c0e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f2" media="(prefers-color-scheme: light)">
+<title>Notifications · opgate</title>
+<link rel="stylesheet" href="/app.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+</head>
+<body class="k-secrets history overview settings">
+<div class="page"><div class="card"><div class="main" id="notify" data-key="{{.Key}}" data-unlocked="{{if .Unlocked}}1{{end}}">
+  <div class="top"><a class="brand" href="/" title="Overview"><span class="mark"><img src="/favicon.svg" alt=""></span>opgate <span class="hlink">· overview</span></a>
+    <a class="timer navlink" href="/#history">History →</a></div>
+
+  <h1 class="ptitle">Notifications</h1>
+  <p class="note">opgate pushes straight to the browsers you turn on here, end-to-end encrypted. Each device has its own settings.</p>
+
+  <div class="lockbar" id="lockbar">
+    {{if .Unlocked}}<span>Changes unlocked until {{.UnlockedUntil}}</span><button type="button" class="minibtn" id="lock">Lock</button>
+    {{else}}<span>Changes need your passkey (10 minutes)</span><button type="button" class="minibtn ok" id="unlock">Unlock with passkey</button>{{end}}
+  </div>
+  <div id="msg"></div>
+  {{if .KeyErr}}<p class="note bad">Web push is not available: {{.KeyErr}}</p>{{end}}
+  {{if .PrefsErr}}<p class="note bad">The settings can't be read from the keychain: {{.PrefsErr}}. No notifications go out until then.</p>{{end}}
+
+  <h2 class="sec">This device</h2>
+  <div class="thisdev" id="thisdev">
+    <p class="note" id="thisstate">Checking this browser…</p>
+    <button type="button" class="minibtn ok" id="subscribe" hidden>Turn on notifications here</button>
+  </div>
+
+  <h2 class="sec">Devices</h2>
+  {{if .Devices}}{{range .Devices}}<section class="dev{{if .Gone}} gone{{end}}" data-id="{{.ID}}" data-hash="{{.Hash}}" data-name="{{.Name}}">
+    <div class="devhead">
+      <div><div class="what">{{.Name}} <span class="thisbadge" hidden>this device</span></div>
+        <div class="t">{{.Kind}} · added {{.Added}}</div></div>
+      <div class="acts">
+        <button type="button" class="minibtn test"{{if .Gone}} disabled{{end}}>Test</button>
+        <button type="button" class="minibtn rename">Rename</button>
+        <button type="button" class="minibtn revoke remove">Remove</button>
+      </div>
+    </div>
+    <p class="devstatus s-{{.StatusLevel}}">{{.Status}}</p>
+    {{$id := .ID}}{{range .Rows}}<div class="catrow">
+      <div class="cat"><b>{{.Name}}</b><span>{{.Help}}</span></div>
+      {{template "seg" (dict "Name" (printf "lv-%s-%s" $id .Key) "Opts" .Opts)}}
+    </div>{{end}}
+  </section>{{end}}
+  {{else}}<p class="note">No device yet: requests only show on the overview. Open this page on the phone (the installed opgate app) and in the Mac's browser, unlock, and turn notifications on.</p>{{end}}
+
+  <p class="note foot">opgate v{{.Version}} · settings are kept in opgate's keychain item, so agents can't change them. Every change is in the history.</p>
+</div></div></div>
+<script src="/app.js"></script>
+</body>
+</html>

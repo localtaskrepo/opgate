@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- a template: install.sh installs it as ~/Library/LaunchAgents/<OPGATE_ID>-creds.plist and sets the label,
+	     the paths and the push target and lifecycle file from install.env (plutil -replace; empty: no push, no
+	     comparison) -->
+	<key>Label</key>
+	<string>OPGATE_ID-creds</string>
+	<!-- daily credential check (opgate creds): optional metrics push (OPGATE_CREDS_PUSH),
+	     change log ~/Library/Logs/opgate/creds.jsonl, calendar differences in creds.log -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>HOME/.local/bin/opgate</string>
+		<string>creds</string>
+		<string>--quiet</string>
+		<string>--push</string>
+		<string>OPGATE_CREDS_PUSH</string>
+		<string>--lifecycle</string>
+		<string>OPGATE_CREDS_LIFECYCLE</string>
+	</array>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>7</integer>
+		<key>Minute</key>
+		<integer>5</integer>
+	</dict>
+	<!-- launchd's PATH lacks Homebrew: command probes may need Homebrew tools -->
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+	</dict>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>Umask</key>
+	<integer>63</integer>
+	<key>StandardOutPath</key>
+	<string>HOME/Library/Logs/opgate/creds.log</string>
+	<key>StandardErrorPath</key>
+	<string>HOME/Library/Logs/opgate/creds.log</string>
+</dict>
+</plist>
